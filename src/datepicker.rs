@@ -50,12 +50,24 @@ impl Component for Datepicker {
                     <button {onclick} type="button">{"<"}</button>
                 };
 
+        let context = ctx.link().clone();
+        let onclick_next = Callback::from(move |_| {
+            context.send_message(DatepickerMessage::CurrentMonthChange(shift_months(date, 1)));
+        });
+        let next = html! {
+                    <button onclick={onclick_next} type="button">{">"}</button>
+                };
+
         let calendarize = calendarize::calendarize_with_offset(self.current_date, 1);
 
         let rows = calendarize.iter().map(|n| {
             let cells = n.iter().map(|cl| {
+                let mut number = String::new();
+                if cl > &0 {
+                    number = cl.to_string();
+                }
                 html! {
-                    <td>{cl}</td>
+                    <td>{number}</td>
                 }
             }).collect::<Html>();
             html! {
@@ -72,7 +84,7 @@ impl Component for Datepicker {
                 <thead>
                     <tr>
                         <th colspan="7">
-                            {prev} {month_name.name()}
+                            {prev} {month_name.name()} {self.current_date.year()} {next}
                         </th>
                     </tr>
                     <tr>
