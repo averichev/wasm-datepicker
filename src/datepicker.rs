@@ -2,23 +2,33 @@ use std::convert::TryFrom;
 use chrono::{Datelike, Month, NaiveDate};
 use chrono::Weekday;
 use chronoutil::shift_months;
-use yew::{Callback, Component, Context, Html, html};
+use gloo::console::log;
+use yew::{Callback, Component, Context, Html, html, Properties};
 
 
 pub struct Datepicker {
     current_date: NaiveDate,
 }
 
+
+#[derive(Default, Properties, PartialEq)]
+pub struct DatepickerProperties {
+    pub on_select: Callback<NaiveDate>,
+}
+
 pub enum DatepickerMessage {
-    CurrentMonthChange(NaiveDate)
+    CurrentMonthChange(NaiveDate),
+    Select(u32),
 }
 
 impl Component for Datepicker {
     type Message = DatepickerMessage;
-    type Properties = ();
+    type Properties = DatepickerProperties;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        let current_date = chrono::offset::Local::now().date_naive();
+    fn create(_ctx: &Context<Self>) -> Self {
+        let current_date = chrono::offset::Local::now().date_naive()
+            .with_day0(0)
+            .unwrap();
         Datepicker { current_date }
     }
 
@@ -26,6 +36,17 @@ impl Component for Datepicker {
         match msg {
             DatepickerMessage::CurrentMonthChange(date) => {
                 self.current_date = date
+            }
+            DatepickerMessage::Select(date) => {
+                let selected_date = self.current_date.with_day(date).unwrap();
+                log!(
+                    "DatepickerMessage::Select",
+                    date,
+                    self.current_date.format("%Y-%m-%d").to_string(),
+                    selected_date.format("%Y-%m-%d").to_string()
+
+                );
+                &ctx.props().on_select.emit(selected_date);
             }
         }
         true
@@ -60,14 +81,18 @@ impl Component for Datepicker {
 
         let calendarize = calendarize::calendarize_with_offset(self.current_date, 1);
 
-        let rows = calendarize.iter().map(|n| {
-            let cells = n.iter().map(|cl| {
+        let rows = calendarize.iter().cloned().map(|n| {
+            let cells = n.iter().cloned().map(|cl| {
+                let context = ctx.link().clone();
+                let onclick = Callback::from(move |_| {
+                    context.send_message(DatepickerMessage::Select(cl));
+                });
                 let mut number = String::new();
-                if cl > &0 {
+                if cl > 0 {
                     number = cl.to_string();
                 }
                 html! {
-                    <td>{number}</td>
+                    <td {onclick}>{number}</td>
                 }
             }).collect::<Html>();
             html! {
