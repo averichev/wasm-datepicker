@@ -1,17 +1,15 @@
 mod utils;
-pub mod datepicker;
 
-use std::convert::TryInto;
 use chrono::{Datelike, NaiveDate};
-use gloo::console::log;
+use std::convert::TryInto;
 use wasm_bindgen::__rt::IntoJsResult;
 use wasm_bindgen::prelude::*;
-use web_sys::{Element};
 use web_sys::js_sys::{Date, Function};
-use yew::prelude::*;
+use web_sys::Element;
 use yew::html::IntoHtmlResult;
+use yew::prelude::*;
 use yew::Renderer;
-use crate::datepicker::Datepicker as DatepickerComponent;
+use yew_datepicker::Datepicker as DatepickerComponent;
 
 #[wasm_bindgen]
 extern "C" {
@@ -35,8 +33,9 @@ impl Datepicker {
     pub fn render(&self, callback: Function) {
         Renderer::<WrapperComponent>::with_root_and_props(
             self.element.clone(),
-            WrapperComponentProperties { callback })
-            .render();
+            WrapperComponentProperties { callback },
+        )
+        .render();
     }
 }
 
@@ -70,8 +69,4 @@ impl Component for WrapperComponent {
             <DatepickerComponent {on_select} />
         }
     }
-}
-
-impl WrapperComponent {
-    fn trigger_on_select(&self, date: &NaiveDate) {}
 }
