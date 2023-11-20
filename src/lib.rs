@@ -1,20 +1,11 @@
-mod utils;
-
 use chrono::{Datelike, NaiveDate};
 use std::convert::TryInto;
-use wasm_bindgen::__rt::IntoJsResult;
 use wasm_bindgen::prelude::*;
 use web_sys::js_sys::{Date, Function};
 use web_sys::Element;
-use yew::html::IntoHtmlResult;
 use yew::prelude::*;
 use yew::Renderer;
 use yew_datepicker::Datepicker as DatepickerComponent;
-
-#[wasm_bindgen]
-extern "C" {
-    fn alert(s: &str);
-}
 
 #[wasm_bindgen]
 #[derive(PartialEq)]
