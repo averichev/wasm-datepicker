@@ -12,19 +12,25 @@ use yew_datepicker::Datepicker as DatepickerComponent;
 pub struct DatepickerOptions {}
 
 #[wasm_bindgen]
+#[derive(Clone)]
 pub struct Datepicker {
     element: Element,
+    on_select: Option<Function>
 }
 
 #[wasm_bindgen]
 impl Datepicker {
     pub fn new(element: Element) -> Datepicker {
-        Datepicker { element }
+        Datepicker { element, on_select: None }
     }
-    pub fn render(&self, callback: Function) {
+    pub fn with_callback(&mut self, on_select: Function) -> Datepicker{
+        self.on_select = Some(on_select);
+        (*self).clone()
+    }
+    pub fn render(&self) {
         Renderer::<WrapperComponent>::with_root_and_props(
             self.element.clone(),
-            WrapperComponentProperties { callback },
+            WrapperComponentProperties { on_select: self.on_select.clone() },
         )
         .render();
     }
@@ -32,9 +38,9 @@ impl Datepicker {
 
 pub struct WrapperComponent;
 
-#[derive(Properties, PartialEq)]
+#[derive(Default, Properties, PartialEq)]
 pub struct WrapperComponentProperties {
-    callback: Function,
+    on_select: Option<Function>,
 }
 
 impl Component for WrapperComponent {
@@ -46,14 +52,19 @@ impl Component for WrapperComponent {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let callback = ctx.props().callback.clone();
+        let callback = ctx.props().on_select.clone();
         let on_select = move |date: NaiveDate| {
             let date_js = Date::new_with_year_month_day(
                 date.year() as u32,
                 date.month0().try_into().unwrap(),
                 date.day() as i32,
             );
-            callback.call1(&JsValue::NULL, &date_js).unwrap();
+            match callback.clone() {
+                None => {}
+                Some(fnc) => {
+                    fnc.call1(&JsValue::NULL, &date_js).unwrap();
+                }
+            }
         };
 
         html! {
