@@ -14,7 +14,7 @@ crate-type = ["cdylib", "rlib"]
 web-sys = { version = "0.3.65", features = ["Window", "Element", "HtmlElement", "Document", "MouseEvent"] }
 wasm-bindgen = {version = "0.2.88"}
 yew = "0.21.0"
-yew-datepicker = "0.1.0"
+yew-datepicker = "0.2.1"
 chrono = "0.4.31"
 
 [dev-dependencies]
